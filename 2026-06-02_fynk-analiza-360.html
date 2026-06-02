@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FYNK — Analiza 360° | 2026-06-02</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+    --gold:#e8c547;--gold2:#f0d060;
+    --green:#4ade80;--red:#f87171;--blue:#60a5fa;--orange:#fb923c;--purple:#c084fc;
+    --text:#f0f0f0;--muted:#888;--border:#2a2a2a;
+  }
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.6}
+
+  /* NAV */
+  .nav{background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 24px}
+  .nav-inner{display:flex;align-items:center;gap:0;overflow-x:auto}
+  .nav-logo{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2px;white-space:nowrap;padding:16px 20px 16px 0;border-right:1px solid var(--border);margin-right:8px}
+  .tab{padding:16px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;color:var(--muted);transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .tab .badge{display:inline-block;background:var(--bg4);color:var(--muted);font-size:10px;padding:1px 6px;border-radius:10px;margin-left:6px}
+  .tab.active .badge{background:var(--gold);color:#000}
+
+  /* VIEWS */
+  .view{display:none;padding:32px 24px;max-width:1100px;margin:0 auto;animation:fadeIn .3s ease}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* TYPOGRAPHY */
+  h1{font-size:28px;font-weight:700;margin-bottom:6px}
+  h2{font-size:19px;font-weight:600;margin:32px 0 16px;color:var(--gold)}
+  h3{font-size:15px;font-weight:600;margin:20px 0 10px;color:var(--text)}
+  p{color:#ccc;margin-bottom:12px}
+  .subtitle{color:var(--muted);font-size:14px;margin-bottom:32px}
+
+  /* AGENT BADGE */
+  .agent-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:24px}
+  .tag-cmo{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+  .tag-seo{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+  .tag-cso{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+  .tag-coo{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3)}
+
+  /* STAT CARDS */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+  .stat{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .stat-val{font-size:26px;font-weight:700;line-height:1.1;margin-bottom:4px}
+  .stat-label{font-size:12px;color:var(--muted)}
+  .stat-note{font-size:11px;margin-top:6px}
+  .c-gold{color:var(--gold)}
+  .c-green{color:var(--green)}
+  .c-red{color:var(--red)}
+  .c-blue{color:var(--blue)}
+  .c-orange{color:var(--orange)}
+  .c-purple{color:var(--purple)}
+  .c-muted{color:var(--muted)}
+
+  /* CARDS */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px}
+  .card h3{margin-top:0;color:var(--text)}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card.border-green{border-color:rgba(74,222,128,.4)}
+  .card.border-red{border-color:rgba(248,113,113,.4)}
+  .card.border-gold{border-color:rgba(232,197,71,.4)}
+  .card.border-blue{border-color:rgba(96,165,250,.4)}
+  .card.border-orange{border-color:rgba(251,146,60,.4)}
+
+  /* VERDICT CHIPS */
+  .verdict{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px;letter-spacing:.5px}
+  .v-stop{background:rgba(248,113,113,.2);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+  .v-scale{background:rgba(74,222,128,.2);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+  .v-grow{background:rgba(96,165,250,.2);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+  .v-wait{background:rgba(255,255,255,.08);color:var(--muted);border:1px solid var(--border)}
+  .v-test{background:rgba(251,146,60,.2);color:var(--orange);border:1px solid rgba(251,146,60,.3)}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+  th{background:var(--bg3);color:var(--muted);font-size:11px;letter-spacing:.5px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+
+  /* ALERT */
+  .alert{border-radius:10px;padding:16px 20px;margin:16px 0;font-size:13px;line-height:1.5}
+  .alert-gold{background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.25);color:var(--gold)}
+  .alert-red{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:#fca5a5}
+  .alert-green{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);color:#86efac}
+  .alert-blue{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);color:#93c5fd}
+
+  /* TIMELINE */
+  .timeline{position:relative;padding-left:28px;margin:16px 0}
+  .timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--border)}
+  .tl-item{position:relative;margin-bottom:20px}
+  .tl-item::before{content:'';position:absolute;left:-24px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--bg4);border:2px solid var(--gold)}
+  .tl-head{font-weight:600;font-size:14px;margin-bottom:4px}
+  .tl-body{font-size:13px;color:#bbb}
+
+  /* CHECKLIST */
+  .checklist{list-style:none;margin:12px 0}
+  .checklist li{padding:7px 0;font-size:13px;color:#ccc;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .checklist li:last-child{border-bottom:none}
+  .checklist li::before{content:'□';color:var(--gold);flex-shrink:0;margin-top:1px}
+  .checklist li.done::before{content:'✓';color:var(--green)}
+  .checklist li strong{color:var(--text)}
+
+  /* BAR CHART */
+  .bars{margin:16px 0}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .bar-label{width:180px;font-size:12px;color:var(--muted);text-align:right;flex-shrink:0}
+  .bar-track{flex:1;background:var(--bg4);border-radius:4px;height:20px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:600;color:#000;transition:width 1s ease}
+  .bar-val{width:80px;font-size:12px;color:var(--muted);flex-shrink:0}
+
+  /* DIVIDER */
+  .divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+
+  /* CORRECTION BLOCK */
+  .correction{background:rgba(232,197,71,.06);border:1px solid rgba(232,197,71,.2);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 18px;margin:16px 0;font-size:13px}
+  .correction-title{font-weight:700;color:var(--gold);font-size:11px;letter-spacing:1px;margin-bottom:6px}
+
+  /* PHASE BLOCKS */
+  .phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+  .phase{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .phase-num{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+  .phase-title{font-size:15px;font-weight:700;margin-bottom:12px}
+  .phase-items{list-style:none}
+  .phase-items li{font-size:12px;color:#bbb;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px}
+  .phase-items li:last-child{border-bottom:none}
+  .phase-items li::before{content:'→';color:var(--gold);flex-shrink:0}
+  .phase.p1{border-top:3px solid var(--green)}
+  .phase.p2{border-top:3px solid var(--blue)}
+  .phase.p3{border-top:3px solid var(--purple)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">FYNK 360°</div>
+    <button class="tab active" onclick="go('diag')">Diagnoza</button>
+    <button class="tab" onclick="go('cmo')">@CMO <span class="badge">Kampanie</span></button>
+    <button class="tab" onclick="go('seo')">@SEO <span class="badge">Organik</span></button>
+    <button class="tab" onclick="go('cso')">@CSO <span class="badge">Sprzedaż</span></button>
+    <button class="tab" onclick="go('coo')">@COO <span class="badge">Egzekucja</span></button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     DIAGNOZA
+═══════════════════════════════════════════════ -->
+<div id="v-diag" class="view active">
+  <h1>FYNK — Analiza 360°</h1>
+  <p class="subtitle">Data: 2026-06-02 · Dane: Google Ads + GA4 (9 mies.) + SEO audit + CRM LiveSpace · Korekty właściciela uwzględnione</p>
+
+  <h2>Stan wyjściowy — liczby absolutne</h2>
+  <div class="stats">
+    <div class="stat"><div class="stat-val c-gold">45 755 PLN</div><div class="stat-label">Wydatek Google Ads (9 mies.)</div><div class="stat-note c-muted">~5 084 PLN/mies.</div></div>
+    <div class="stat"><div class="stat-val c-blue">9 031</div><div class="stat-label">Kliknięcia płatne</div><div class="stat-note c-muted">CTR 6.98% / CPC 5.07 PLN</div></div>
+    <div class="stat"><div class="stat-val c-red">~80</div><div class="stat-label">Prawdziwych leadów (9 mies.)</div><div class="stat-note c-red">573 PLN / lead</div></div>
+    <div class="stat"><div class="stat-val c-muted">1 395</div><div class="stat-label">"Konwersje" Google</div><div class="stat-note c-red">0 wysłanych briefów</div></div>
+    <div class="stat"><div class="stat-val c-green">620</div><div class="stat-label">Sesje organiczne (9 mies.)</div><div class="stat-note c-green">Najlepsza jakość: 41.6% eng.</div></div>
+    <div class="stat"><div class="stat-val c-orange">62</div><div class="stat-label">Sesje Bing</div><div class="stat-note c-orange">51.6% engagement — anomalia!</div></div>
+  </div>
+
+  <div class="alert alert-gold">
+    <strong>KLUCZOWY WNIOSEK:</strong> Przy modelu B2B-telefonicznym FYNK nie mierzy właściwej rzeczy. "Konwersja" to telefon od nieznanej firmy — tego GA4 nie rejestruje. Potrzebny call tracking lub ręczne logowanie źródła w LiveSpace przy każdym nowym leadzie.
+  </div>
+
+  <h2>Mapa kampanii — szybki przegląd</h2>
+  <table>
+    <tr><th>Kampania</th><th>Budżet</th><th>Engagement</th><th>Key Event Rate</th><th>Wynik opt.</th><th>Verdict</th></tr>
+    <tr><td><strong>PL_Projekty opakowań</strong></td><td>40 PLN/dzień</td><td class="c-green">46.6%</td><td class="c-green">14.3%</td><td>91.68</td><td><span class="verdict v-scale">SKALOWAĆ → 120 PLN</span></td></tr>
+    <tr><td><strong>PL_Agencja brand</strong></td><td>100 PLN/dzień</td><td>36.7%</td><td>9.3%</td><td class="c-green">96.86</td><td><span class="verdict v-grow">ZWIĘKSZYĆ + kasę z brand</span></td></tr>
+    <tr><td><strong>FYNK_brand</strong></td><td>10 PLN/dzień</td><td>46.0%</td><td>8.1%</td><td>91.84</td><td><span class="verdict v-stop">STOP — brand na poz. 2.42</span></td></tr>
+    <tr><td><strong>SEARCH DE_Packungs</strong></td><td>zawieszona</td><td class="c-red">25.9%</td><td class="c-red">0.055%</td><td>—</td><td><span class="verdict v-wait">RESTART PO SEO FIX</span></td></tr>
+  </table>
+
+  <h2>Jakość ruchu wg kanału (GA4, 9 mies.)</h2>
+  <div class="bars">
+    <div class="bar-row"><div class="bar-label">Bing</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#fb923c">51.6% eng · 47s</div></div><div class="bar-val c-orange">62 sesje</div></div>
+    <div class="bar-row"><div class="bar-label">Organic SEO</div><div class="bar-track"><div class="bar-fill" style="width:80%;background:#4ade80">41.6% eng · 28.8s</div></div><div class="bar-val c-green">620 sesji</div></div>
+    <div class="bar-row"><div class="bar-label">Referral</div><div class="bar-track"><div class="bar-fill" style="width:69%;background:#60a5fa">35.4% eng · 10.6s</div></div><div class="bar-val">209 sesji</div></div>
+    <div class="bar-row"><div class="bar-label">Paid Search (Google)</div><div class="bar-track"><div class="bar-fill" style="width:71%;background:#e8c547">36.7% eng · 17s</div></div><div class="bar-val c-gold">6 661 sesji</div></div>
+    <div class="bar-row"><div class="bar-label">Direct</div><div class="bar-track"><div class="bar-fill" style="width:44%;background:#888">22.5% eng · 9.8s</div></div><div class="bar-val c-muted">3 541 sesji</div></div>
+  </div>
+
+  <div class="alert alert-blue">
+    <strong>Paradoks:</strong> FYNK wydaje 95% budżetu na Google Ads (Paid 59.7% ruchu), ale Bing i Organic generują 2x lepszy ruch przy zerowym lub minimalnym koszcie. Nie oznacza to rezygnacji z Google — oznacza że przy obecnym budżecie nie jest optymalnie podzielony.
+  </div>
+
+  <h2>Konkurencja SEO — krótko</h2>
+  <table>
+    <tr><th>Agencja</th><th>Ocena SEO</th><th>Title tag</th><th>Blog</th><th>Wniosek</th></tr>
+    <tr><td>SaltPepper (WW)</td><td class="c-orange">6/10</td><td class="c-green">✓</td><td class="c-red">✗ (404)</td><td>Najgroźniejszy, ale brak bloga</td></tr>
+    <tr><td>PG Branding (WW)</td><td class="c-orange">6/10</td><td class="c-green">✓</td><td class="c-green">✓</td><td>Dobry, ale Warszawa</td></tr>
+    <tr><td>Ancy (Kraków)</td><td class="c-red">3/10</td><td class="c-red">✗</td><td class="c-orange">14 art.</td><td>Lokalny rywal — słabe SEO</td></tr>
+    <tr><td>Hi! Brands (Kraków)</td><td class="c-red">2/10</td><td class="c-red">✗</td><td class="c-red">✗</td><td>Lokalny rywal — katastrofalne SEO</td></tr>
+    <tr><td><strong>FYNK (teraz)</strong></td><td class="c-red"><strong>2/10</strong></td><td class="c-orange">⚠ cząstkowo</td><td class="c-green">✓</td><td><strong>Otwarcie na dominację lokalną</strong></td></tr>
+    <tr><td><strong>FYNK (po fix)</strong></td><td class="c-green"><strong>8/10</strong></td><td class="c-green">✓</td><td class="c-green">✓</td><td><strong>Cel: top 3 Kraków</strong></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     @CMO
+═══════════════════════════════════════════════ -->
+<div id="v-cmo" class="view">
+  <div class="agent-tag tag-cmo">@CMO · MARKETING &amp; KAMPANIE</div>
+  <h1>Strategia digital — co robić, kiedy, ile</h1>
+  <p class="subtitle">Filozofia: research przed kreacją, dane przed opiniami. Sprzedaż > nagrody. — Ogilvy</p>
+
+  <div class="correction">
+    <div class="correction-title">KOREKTA WŁAŚCICIELA (02.06.2026)</div>
+    Budżet wzrasta etapami, nie jednorazowo. FYNK_brand → na PL_Agencja brand (nie PL_Projekty). Content SEO drugorzędny — model sprzedaży przez telefon, nie formularz.
+  </div>
+
+  <h2>Plan budżetu — 3 etapy</h2>
+  <div class="phases">
+    <div class="phase p1">
+      <div class="phase-num">ETAP 1 — NATYCHMIAST</div>
+      <div class="phase-title c-green">+2 400 PLN/mies.</div>
+      <ul class="phase-items">
+        <li>STOP FYNK_brand (–300 PLN) → na PL_Agencja brand</li>
+        <li>PL_Projekty opakowań: 40 → 120 PLN/dzień</li>
+        <li>PL_Agencja brand: 100 → 110 PLN/dzień</li>
+        <li>Łącznie: ~6 900 PLN/mies.</li>
+      </ul>
+    </div>
+    <div class="phase p2">
+      <div class="phase-num">ETAP 2 — PO 4 TYGODNIACH</div>
+      <div class="phase-title c-blue">+1 350 PLN/mies.</div>
+      <ul class="phase-items">
+        <li>Google Retargeting (dane gotowe — 3 dni wdrożenia)</li>
+        <li>Microsoft Ads Bing — import kampanii PL (30 min)</li>
+        <li>Warunek: Etap 1 daje mierzalne efekty</li>
+        <li>Łącznie: ~8 250 PLN/mies.</li>
+      </ul>
+    </div>
+    <div class="phase p3">
+      <div class="phase-num">ETAP 3 — CZERWIEC/LIPIEC</div>
+      <div class="phase-title c-purple">+1 700 PLN/mies.</div>
+      <ul class="phase-items">
+        <li>LinkedIn Ads: Marketing Director FMCG, PL</li>
+        <li>Format: Document Ads (case study PDF)</li>
+        <li>Warunek: Etap 2 potwierdza wyniki</li>
+        <li>Łącznie: ~9 950 PLN/mies.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Kampanie aktywne — szczegóły</h2>
+  <div class="cards">
+    <div class="card border-green">
+      <div class="verdict v-scale">SKALOWAĆ NATYCHMIAST</div>
+      <h3>SEARCH PL_Projekty opakowań</h3>
+      <p>Najlepsza kampania — 46.6% engagement, 14.3% key event rate (najwyższy z wszystkich). Kosztuje 40 PLN/dzień i głoduje.</p>
+      <table style="margin:10px 0">
+        <tr><td>Budżet dziś</td><td class="c-red">40 PLN/dzień</td></tr>
+        <tr><td>Budżet cel</td><td class="c-green">120 PLN/dzień</td></tr>
+        <tr><td>Optimization score</td><td>91.68/100</td></tr>
+      </table>
+      <p style="font-size:12px;color:var(--muted)">Grupy reklam: Projekty opakowań, Projekty etykiet, Projekt opakowania cena</p>
+    </div>
+    <div class="card border-blue">
+      <div class="verdict v-grow">ZWIĘKSZYĆ + PRZYJĄĆ KASĘ Z BRAND</div>
+      <h3>SEARCH PL_Agencja brand</h3>
+      <p>Status: "ograniczona z powodu budżetu". Optimization score 96.86 — najwyższy ze wszystkich. Google sam mówi że mógłby więcej.</p>
+      <table style="margin:10px 0">
+        <tr><td>Budżet dziś</td><td class="c-orange">100 PLN/dzień</td></tr>
+        <tr><td>Budżet cel</td><td class="c-green">110 PLN/dzień</td></tr>
+        <tr><td>Optimization score</td><td class="c-green">96.86/100</td></tr>
+      </table>
+    </div>
+    <div class="card border-red">
+      <div class="verdict v-stop">WYŁĄCZYĆ DZIŚ</div>
+      <h3>FYNK_brand</h3>
+      <p>FYNK organicznie na pozycji <strong>2.42</strong> dla frazy "fynk". Kto szuka "fynk" — już nas zna. Płacimy za ruch który mamy za darmo.</p>
+      <table style="margin:10px 0">
+        <tr><td>Koszt miesięczny</td><td class="c-red">300 PLN</td></tr>
+        <tr><td>Co to jest</td><td>Ruch branded, nie akwizycja</td></tr>
+        <tr><td>Gdzie przenieść</td><td class="c-green">PL_Agencja brand</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="verdict v-wait">CZEKAMY NA SEO FIX</div>
+      <h3>SEARCH DE_Packungs</h3>
+      <p>1 802 sesje → TYLKO 2 zdarzenia (0.055%). Problem: strona /de/ bez tytułu, meta, hreflang. Ludzie klikają i natychmiast wychodzą.</p>
+      <div class="alert alert-gold" style="margin-top:12px;font-size:12px">Popyt DE istnieje — brak jest po stronie landing page, nie kampanii. Restart po SEO fix (sierpień).</div>
+    </div>
+  </div>
+
+  <h2>Nowe kampanie — kiedy i co</h2>
+  <table>
+    <tr><th>Kampania</th><th>Kiedy</th><th>Budżet</th><th>Uzasadnienie</th></tr>
+    <tr><td><strong>Google Retargeting</strong></td><td class="c-blue">Etap 2</td><td>~600 PLN/mies.</td><td>8 951 kliknięć bez konwersji — trzeba ich przypomnieć. Dane remarketingowe gotowe.</td></tr>
+    <tr><td><strong>Microsoft Ads Bing</strong></td><td class="c-blue">Etap 2 — test 60 dni</td><td>~750 PLN/mies.</td><td>62 sesje z Bing = 51.6% engagement vs 36.7% Google. Hipoteza: B2B klienci na korporacyjnych laptopach używają Edge/Bing.</td></tr>
+    <tr><td><strong>LinkedIn Ads</strong></td><td class="c-purple">Etap 3</td><td>~1 700 PLN/mies.</td><td>Google łapie szukających. LinkedIn łapie Dyrektor Marketingu FMCG 3 miesiące przed decyzją.</td></tr>
+    <tr><td><strong>SEARCH DE Restart</strong></td><td class="c-muted">Sierpień (po SEO)</td><td>~1 500 PLN/mies.</td><td>Nowe kreacje DE + social proof Henkel/Kerrygold po naprawie strony /de/.</td></tr>
+  </table>
+
+  <h2>Benchmark — co robią najlepsze agencje globalnie</h2>
+  <table>
+    <tr><th>Agencja</th><th>Kraj</th><th>Strategia digital</th><th>Wniosek dla FYNK</th></tr>
+    <tr><td>Pearlfisher</td><td>UK/USA</td><td>Brak branded Ads · LinkedIn Doc Ads · Clutch Premium · Awards SEO</td><td>Nie płacą za własną markę. My też nie powinniśmy.</td></tr>
+    <tr><td>Marx Design</td><td>NZ</td><td>80% SEO · Blog = case studies SEO · Instagram → brief</td><td>Blog działa — ale tylko z konsekwencją 6+ mies.</td></tr>
+    <tr><td>B&amp;G Design</td><td>DE</td><td>Google Search DE + LinkedIn DACH + Clutch.de</td><td>DE rynek wymaga lokalnej obecności. FYNK ma przewagę: Henkel/Kerrygold.</td></tr>
+    <tr><td>Burst Creative</td><td>UK</td><td>Google Search + Retargeting · Case studies osobne URL</td><td>Case study = osobna strona SEO. Hortex WOWOC powinno mieć swój URL.</td></tr>
+  </table>
+  <p class="subtitle">Wspólny mianownik: brak branded campaign, konwersja = rozmowa/brief (nie kliknięcie).</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     @SEO
+═══════════════════════════════════════════════ -->
+<div id="v-seo" class="view">
+  <div class="agent-tag tag-seo">@SEO · ORGANICZNY WZROST</div>
+  <h1>SEO przy modelu B2B-telefonicznym — co warto, co odpuścić</h1>
+  <p class="subtitle">GSC jest prawdą · Techniczne fundamenty najpierw · Content to inwestycja, nie koszt</p>
+
+  <div class="correction">
+    <div class="correction-title">KLUCZOWA KOREKTA (02.06.2026) — ZMIENIA PRIORYTETY SEO</div>
+    Organiczne SEO = 5.6% ruchu vs paid 59.7%. Przy modelu B2B gdzie klient dzwoni (nie wypełnia formularza), content SEO ma ograniczony bezpośredni wpływ na sprzedaż. <strong>Priorytetowe stają się fixy techniczne</strong> — bo poprawiają skuteczność płatnych kampanii (Quality Score → niższy CPC) i są warunkiem dla restartu DE.
+  </div>
+
+  <h2>Podział SEO — co robić, co odpuścić</h2>
+  <div class="cards">
+    <div class="card border-green">
+      <div class="verdict v-scale">PRIORYTET #1 — ZRÓB</div>
+      <h3>Fixy techniczne (przez developera)</h3>
+      <p>Nie dla organic. Dla płatnych kampanii i strony DE. Każda z tych zmian poprawia Quality Score w Google Ads → niższy CPC.</p>
+      <ul class="checklist">
+        <li>23 strony z noindex — sprawdzić czy celowe, naprawić błędne</li>
+        <li>Redirect 301 www → fynk.eu</li>
+        <li>Title + meta na wszystkich stronach PL/EN/DE</li>
+        <li>Hreflang: PL, EN, DE, UK (uwaga: UA w URL = "uk" w hreflang)</li>
+        <li>Canonical tags (self-referencing, dynamiczne)</li>
+        <li>H1 z frazami kluczowymi na głównych stronach</li>
+        <li>Schema markup JSON-LD (ProfessionalService)</li>
+        <li>GA4 event "Brief Submitted" — razem, oszczędność czasu</li>
+      </ul>
+    </div>
+    <div class="card border-blue">
+      <div class="verdict v-test">PRIORYTET #2 — WARTO, ALE OSTROŻNIE</div>
+      <h3>Content SEO (blog)</h3>
+      <p>Przy modelu telefonicznym artykuł nie generuje leadów bezpośrednio — ale buduje autorytet domeny i social proof dla osoby decyzyjnej która wygoogla FYNK po rozmowie przez telefon.</p>
+      <p style="font-size:12px;color:var(--muted)">Mierzyć: czy po opublikowaniu artykułu rośnie liczba branded search ("fynk agencja opakowań") — to sygnał że content wspiera decyzję kupna.</p>
+      <ul class="checklist">
+        <li><strong>Artykuł #1 GOTOWY</strong> — "Od czego zależy cena projektu opakowania?" (plik w analizy/)</li>
+        <li>Artykuł #2 — "Jak wybrać agencję opakowań — 7 pytań"</li>
+        <li>Case study Hortex WOWOC jako osobna strona SEO</li>
+      </ul>
+    </div>
+    <div class="card border-red">
+      <div class="verdict v-stop">ODPUŚCIĆ NA RAZIE</div>
+      <h3>Agresywny content plan (6 art./kw.)</h3>
+      <p>Przy SEO od 2/10 i braku deva wdrażającego fixy techniczne — pisanie 6 artykułów bez podstaw technicznych to jak malowanie okien w nieopłacanym budynku.</p>
+      <p style="font-size:12px;color:var(--muted)">Priorytet: najpierw dev fix → potem content. W tej kolejności.</p>
+    </div>
+  </div>
+
+  <h2>Okno możliwości — lokalna dominacja Kraków</h2>
+  <div class="alert alert-green">
+    <strong>Dobra wiadomość:</strong> Ancy i Hi! Brands — lokalni rywale w Krakowie — mają SEO 2-3/10. Hi! Brands nie ma nawet title taga. FYNK po podstawowych fixach (title, meta, hreflang) przeskakuje ich wszystkich i może być #1 w Google dla Krakowa bez wielkiego wysiłku.
+  </div>
+
+  <table>
+    <tr><th>Fraza</th><th>Konkurencja</th><th>Trudność</th><th>Szansa</th></tr>
+    <tr><td>agencja brandingowa Kraków</td><td class="c-red">Ancy słaba, Hi! katastrofa</td><td class="c-green">NISKA</td><td class="c-green">🟢 ŁATWO</td></tr>
+    <tr><td>projektowanie opakowań Kraków</td><td class="c-green">NIKT nie atakuje</td><td class="c-green">NISKA</td><td class="c-green">🟢 ŁATWO</td></tr>
+    <tr><td>projekt opakowania koszt/cena</td><td class="c-green">Luka rynkowa</td><td class="c-green">NISKA</td><td class="c-green">🟢 + konwertuje!</td></tr>
+    <tr><td>projekt opakowania FMCG</td><td class="c-green">Nikt nie atakuje</td><td class="c-green">NISKA</td><td class="c-green">🟢 ŁATWO</td></tr>
+    <tr><td>agencja brandingowa FMCG</td><td class="c-green">Luka</td><td class="c-green">NISKA</td><td class="c-green">🟢 ŁATWO</td></tr>
+    <tr><td>Verpackungsdesign Agentur Polen</td><td class="c-green">NIKT z PL agencji</td><td class="c-green">BARDZO NISKA</td><td class="c-green">🟢 Unikalna szansa DE</td></tr>
+    <tr><td>projektowanie opakowań</td><td class="c-orange">SaltPepper, PG</td><td class="c-orange">ŚREDNIA</td><td class="c-orange">🟡 Z contentem możliwe</td></tr>
+  </table>
+
+  <h2>SEO dla kampanii DE — to nie jest organic, to naprawa płatnej</h2>
+  <div class="alert alert-gold">
+    Kampania DE miała 1 802 sesje i 2 zdarzenia (0.055%). Diagnoza: strona /de/ nie ma tytułu, treści DE ani hreflang — kliknięcie reklamy prowadzi do zepsutej strony. Fix techniczny = nie SEO dla organic, ale <strong>warunek działania kampanii płatnej</strong>. Koszt fixa = raz. Efekt = kampania DE może wrócić z normalnym engagement.
+  </div>
+
+  <h2>Plan działania SEO — realistyczny</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-head">Czerwiec — Dev fix (priorytet absolutny)</div>
+      <div class="tl-body">Deadline: 13.06. Zlecić razem: SEO fix + GA4 "Brief Submitted". Sprawdzić 23 noindex, wdrożyć title/meta/hreflang. Po wdrożeniu: GSC request indexing dla 5 kluczowych stron.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-head">Czerwiec — Quick wins bez deva</div>
+      <div class="tl-body">Google Moja Firma — uzupełnić kategorię i opis z frazami kluczowymi. Clutch.co — założyć profil, zebrać 3-5 recenzji (Hortex, Kopernik, dr Oetker). Sprawdzić profile nagrodowe (Pentawards, World Brand Design Society) — czy linkują do fynk.eu.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-head">Lipiec — Pierwszy artykuł + case study</div>
+      <div class="tl-body">Opublikować artykuł #1 "Od czego zależy cena..." (gotowy). Case study Hortex WOWOC jako osobna strona z URL /pl/project/hortex-wowoc — potencjalna strona rankingowa.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-head">Sierpień — Restart DE + ocena efektów</div>
+      <div class="tl-body">Po SEO fix: restart kampanii SEARCH DE z nowymi kreacjami. Raport SEO: porównanie z punktem startowym z czerwca.</div>
+    </div>
+  </div>
+
+  <h2>Cele SEO — 6 miesięcy (grudzień 2026)</h2>
+  <table>
+    <tr><th>Metryka</th><th>Teraz</th><th>Cel</th></tr>
+    <tr><td>Kliknięcia organiczne/mies.</td><td class="c-red">~75</td><td class="c-green">400–600</td></tr>
+    <tr><td>Frazy w top 10</td><td class="c-red">&lt;5</td><td class="c-green">30–50</td></tr>
+    <tr><td>Pozycja "agencja brandingowa Kraków"</td><td class="c-red">brak</td><td class="c-green">Top 3</td></tr>
+    <tr><td>Strony zindeksowane</td><td class="c-red">17</td><td class="c-green">50+</td></tr>
+    <tr><td>Strona /de/ — czas sesji</td><td class="c-red">6.85s</td><td class="c-green">&gt;20s</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     @CSO
+═══════════════════════════════════════════════ -->
+<div id="v-cso" class="view">
+  <div class="agent-tag tag-cso">@CSO · SPRZEDAŻ I KONWERSJA</div>
+  <h1>Gdzie jest leja i jak ją naprawić</h1>
+  <p class="subtitle">Kasa. Dziś. Bez wymówek. — Belfort style</p>
+
+  <div class="correction">
+    <div class="correction-title">FUNDAMENTALNA ZMIANA DEFINICJI KONWERSJI (02.06.2026)</div>
+    Prawdziwa konwersja = <strong>telefon od nieznanej firmy</strong>. Nie kliknięcie, nie wypełniony formularz, nie wizyta na /contact. FYNK sprzedaje przez rozmowę — usługi są zbyt złożone na formularz. GA4 tego nie mierzy. Trzeba to zmienić.
+  </div>
+
+  <h2>Prawda o konwersjach (rozkład 1 395 "konwersji")</h2>
+  <table>
+    <tr><th>Zdarzenie Google</th><th>Liczba</th><th>Co to naprawdę</th><th>Wartość sprzedażowa</th></tr>
+    <tr><td>Wizyta na /contact</td><td>629</td><td>Otworzyli stronę kontaktu</td><td class="c-muted">Niska</td></tr>
+    <tr><td>Klik "Kontakt"</td><td>237</td><td>Kliknęli link</td><td class="c-muted">Niska</td></tr>
+    <tr><td>Wejście do portfolio</td><td>234</td><td>Przeglądali prace</td><td class="c-orange">Średnia</td></tr>
+    <tr><td>Klik przycisku brief</td><td>214</td><td>Kliknęli "Wyślij brief"</td><td class="c-orange">Średnia-wysoka</td></tr>
+    <tr><td><strong>Klik e-maila</strong></td><td class="c-green"><strong>78</strong></td><td><strong>Skopiowali adres e-mail</strong></td><td class="c-green"><strong>Wysoka — ciepły lead</strong></td></tr>
+    <tr><td><strong>Połączenie z reklamy</strong></td><td class="c-green"><strong>2</strong></td><td><strong>Zadzwonili</strong></td><td class="c-green"><strong>Najwyższa</strong></td></tr>
+  </table>
+
+  <div class="alert alert-red">
+    <strong>ALARM:</strong> 9 031 kliknięć za 45 755 PLN przez 9 miesięcy → zaledwie 2 zarejestrowane telefony z reklam. Jeśli telefonów było więcej (BOK wie), to nie wiemy skąd byli — tracimy dane o źródle.
+  </div>
+
+  <h2>Jak mierzyć właściwą konwersję — 3 opcje</h2>
+  <div class="cards">
+    <div class="card border-green">
+      <h3>Opcja 1: Call Tracking (rekomendowana)</h3>
+      <p>Osobny numer telefonu widoczny tylko dla odwiedzających z Google Ads. Każde połączenie = konwersja z konkretnej kampanii.</p>
+      <p><strong>Narzędzia:</strong> CallPage (PL, ~200 PLN/mies.), CallTrackingMetrics, CallRail.</p>
+      <p style="font-size:12px;color:var(--muted)">Wdrożenie: developer wstawia dynamiczny numer w &lt;head&gt; — 1 dzień roboty. Razem z SEO fixem.</p>
+    </div>
+    <div class="card border-blue">
+      <h3>Opcja 2: Ręczne logowanie w LiveSpace</h3>
+      <p>Każdy nowy lead przy pierwszym kontakcie: <em>"Skąd o nas słyszeli?"</em> → logować pole "Źródło" w LiveSpace.</p>
+      <p><strong>Koszt:</strong> Zero. Wymaga dyscypliny zespołu sprzedaży.</p>
+      <p style="font-size:12px;color:var(--muted)">Można wdrożyć dziś. Nieidealne, ale lepsze niż nic.</p>
+    </div>
+    <div class="card">
+      <h3>Opcja 3: Google Ads Call Extension</h3>
+      <p>W kampaniach search dodać rozszerzenie z numerem telefonu. Kliknięcie w numer = konwersja rejestrowana przez Google.</p>
+      <p><strong>Koszt:</strong> Zero (funkcja Google Ads). Ograniczenie: tylko kliknięcia z urządzeń mobilnych.</p>
+    </div>
+  </div>
+
+  <h2>Gdzie jest leja — diagnoza sprzedażowa</h2>
+  <div class="bars">
+    <div class="bar-row"><div class="bar-label">Kliknięcia płatne</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#e8c547">9 031</div></div><div class="bar-val">100%</div></div>
+    <div class="bar-row"><div class="bar-label">Sesje z engagementem</div><div class="bar-track"><div class="bar-fill" style="width:37%;background:#60a5fa">~3 300</div></div><div class="bar-val">36.7%</div></div>
+    <div class="bar-row"><div class="bar-label">Kliknięcia e-mail</div><div class="bar-track"><div class="bar-fill" style="width:0.9%;background:#4ade80">78</div></div><div class="bar-val c-green">0.9%</div></div>
+    <div class="bar-row"><div class="bar-label">Zarejestrowane telefony</div><div class="bar-track"><div class="bar-fill" style="width:0.02%;background:#f87171;min-width:8px">2</div></div><div class="bar-val c-red">0.02%</div></div>
+  </div>
+  <p style="font-size:12px;color:var(--muted)">Realny koszt jednego leadu przy ~80 telefonach przez 9 mies.: 45 755 ÷ 80 = <strong>572 PLN/lead</strong>. Przy projekcie za 15 000 PLN — do zaakceptowania.</p>
+
+  <h2>78 kliknięć e-maila = ciepłe leady — co z nimi robić?</h2>
+  <div class="alert alert-green">
+    78 osób skopiowało adres e-mail hello@fynk.eu lub d.dulik@fynk.eu z płatnego ruchu. To najgorętszy segment — aktywne działanie. Pytanie: ile z nich napisało? Czy ktoś odpowiedział? Sprawdzić w skrzynce filtrując po "Skąd nas znacie".
+  </div>
+
+  <h2>Kwalifikacja leadów z kampanii PL_Projekty</h2>
+  <p>Kampania PL_Projekty opakowań ma najlepszy key event rate (14.3%) — to najgorętszy ruch. Gdy ktoś z tej kampanii dzwoni:</p>
+  <div class="card">
+    <h3>Skrypt pierwszego kontaktu (telefon inbound)</h3>
+    <ul class="checklist">
+      <li>"Skąd o nas słyszeli?" — zaloguj w LiveSpace (Źródło: Google/Ads/Znajomy/LinkedIn)</li>
+      <li>Branża klienta — czy to FMCG/produkcja? (ICP Scoring)</li>
+      <li>Skala projektu — single SKU, linia, rebranding?</li>
+      <li>Deadline — konkretna data? Bez deadline = niska pilność</li>
+      <li>Budżet — "Jakie macie doświadczenie z wycenami agencyjnymi?" (otwarte)</li>
+      <li>Zamknięcie: proponuj konkretny termin kolejnego kroku w ostatnich 30 sek.</li>
+    </ul>
+  </div>
+
+  <h2>Rynek DE — popyt istnieje, sprzedaż nie gotowa</h2>
+  <p>1 802 sesje z kampanii DE = popyt jest. Problem: strona /de/ jest zepsuta technicznie (6.85s sesji). Gdy SEO fix wejdzie:</p>
+  <ul class="checklist">
+    <li>Przygotować skrypt sprzedażowy po niemiecku (Florian?)</li>
+    <li>Social proof DE: Henkel, Kerrygold, Develey — podać na pierwszym kontakcie</li>
+    <li>Czas reakcji na lead DE: max 2h (różnica czasu PL-DE = 1h)</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     @COO
+═══════════════════════════════════════════════ -->
+<div id="v-coo" class="view">
+  <div class="agent-tag tag-coo">@COO · EGZEKUCJA I PLAN</div>
+  <h1>Co. Kto. Kiedy. Bez wymówek.</h1>
+  <p class="subtitle">Egzekucja > Strategia · Zrobione > Perfekcyjne · Teraz > Później — Logan Roy</p>
+
+  <div class="alert alert-red">
+    <strong>HEALTH CHECK plan.md:</strong> Plan ma ponad 200 linii i kilka nakładających się sekcji. Zawiera zadania z maja (przeterminowane). Wymaga przeglądu — proponuję to zrobić po tym spotkaniu.
+  </div>
+
+  <h2>Priorytet absolutny — co zrobić w tym tygodniu</h2>
+  <div class="cards">
+    <div class="card border-red">
+      <div class="card-icon">🔴</div>
+      <h3>DZIŚ — Google Ads</h3>
+      <ul class="checklist">
+        <li><strong>WYŁĄCZYĆ FYNK_brand campaign</strong> — 5 min w Google Ads</li>
+        <li><strong>Zwiększyć PL_Projekty opakowań: 40 → 120 PLN/dzień</strong> — 2 min</li>
+        <li><strong>Zwiększyć PL_Agencja brand: 100 → 110 PLN/dzień</strong> — 2 min</li>
+      </ul>
+      <div class="alert alert-gold" style="margin-top:12px;font-size:12px">Łączny czas: 10 minut. Efekt: natychmiastowy. Brak wymówek.</div>
+    </div>
+    <div class="card border-orange">
+      <div class="card-icon">🟡</div>
+      <h3>Ten tydzień — Developer</h3>
+      <ul class="checklist">
+        <li>Zlecić deweloperowi: SEO fix (title/meta/hreflang/noindex)</li>
+        <li>W tym samym zleceniu: call tracking (dynamiczny numer dla ruchu Google) LUB GA4 "Brief Submitted"</li>
+        <li>Deadline: wdrożenie do 13.06.2026</li>
+      </ul>
+    </div>
+    <div class="card border-blue">
+      <div class="card-icon">🔵</div>
+      <h3>Ten tydzień — BOK/Sprzedaż</h3>
+      <ul class="checklist">
+        <li>Wdrożyć pole "Źródło leadu" w LiveSpace dla nowych kontaktów</li>
+        <li>Zapytać BOK: czy klienci częściej dzwonią niż piszą na formularz? (potwierdzenie hipotezy)</li>
+        <li>Jeśli tak → call tracking jest kluczowy, zlecić razem z dev fixem</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Plan etapowy — pełna mapa</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-head">ETAP 1 — NATYCHMIAST (02–09.06.2026)</div>
+      <div class="tl-body">
+        STOP FYNK_brand → pieniądze na PL_Agencja brand.<br>
+        PL_Projekty: 40 → 120 PLN/dzień.<br>
+        Zlecenie deweloperowi: SEO fix + tracking razem (deadline 13.06).<br>
+        Ręczne logowanie źródła leadu w LiveSpace — dziś.
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-head">ETAP 2 — PO 4 TYGODNIACH (01–14.07.2026)</div>
+      <div class="tl-body">
+        Ocena Etapu 1: czy ruch z PL_Projekty wzrósł? Czy więcej leadów telefonicznych?<br>
+        Jeśli tak → uruchomić Google Retargeting (dane gotowe, 3 dni wdrożenia).<br>
+        Uruchomić Microsoft Ads Bing — import kampanii PL (30 minut).<br>
+        Założyć Clutch.co + zebrać 3–5 recenzji od Hortex, Kopernik, dr Oetker.
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-head">ETAP 3 — LIPIEC/SIERPIEŃ (po potwierdzeniu Etapu 2)</div>
+      <div class="tl-body">
+        LinkedIn Ads: Marketing Director FMCG, PL — 1 700 PLN/mies.<br>
+        Opublikować artykuł SEO #1 na blogu fynk.eu (plik gotowy).<br>
+        Restart SEARCH DE po SEO fix — nowe kreacje DE, social proof Henkel/Kerrygold.<br>
+        Raport: porównanie z punktem startowym z czerwca.
+      </div>
+    </div>
+  </div>
+
+  <h2>Deadline mapa — wszystko w jednym miejscu</h2>
+  <table>
+    <tr><th>Zadanie</th><th>Kto</th><th>Deadline</th><th>Status</th></tr>
+    <tr><td>STOP FYNK_brand campaign</td><td>Dominik (Google Ads)</td><td class="c-red">Dziś</td><td><span class="verdict v-stop">DO ZROBIENIA</span></td></tr>
+    <tr><td>PL_Projekty: 40→120 PLN/dzień</td><td>Dominik (Google Ads)</td><td class="c-red">Dziś</td><td><span class="verdict v-stop">DO ZROBIENIA</span></td></tr>
+    <tr><td>PL_Agencja brand: 100→110 PLN/dzień</td><td>Dominik (Google Ads)</td><td class="c-red">Dziś</td><td><span class="verdict v-stop">DO ZROBIENIA</span></td></tr>
+    <tr><td>Zlecić deweloperowi SEO fix + tracking</td><td>Dominik → Dev</td><td class="c-orange">Do 05.06</td><td><span class="verdict v-stop">DO ZROBIENIA</span></td></tr>
+    <tr><td>Logowanie źródła leadu w LiveSpace</td><td>Patrycja / BOK</td><td class="c-orange">Do 05.06</td><td><span class="verdict v-stop">DO ZROBIENIA</span></td></tr>
+    <tr><td>SEO fix wdrożony przez developera</td><td>Developer</td><td>13.06.2026</td><td><span class="verdict v-wait">ZLECIĆ</span></td></tr>
+    <tr><td>GSC request indexing (5 stron)</td><td>Dominik</td><td>14.06.2026</td><td><span class="verdict v-wait">PO FIX</span></td></tr>
+    <tr><td>Google Retargeting — uruchomienie</td><td>Dominik / CMO</td><td>01.07.2026</td><td><span class="verdict v-wait">ETAP 2</span></td></tr>
+    <tr><td>Microsoft Ads Bing — test</td><td>Dominik</td><td>01.07.2026</td><td><span class="verdict v-wait">ETAP 2</span></td></tr>
+    <tr><td>Clutch.co profil + recenzje</td><td>Dominik / BOK</td><td>15.07.2026</td><td><span class="verdict v-wait">ETAP 2</span></td></tr>
+    <tr><td>LinkedIn Ads — uruchomienie</td><td>Dominik / CMO</td><td>01.08.2026</td><td><span class="verdict v-wait">ETAP 3</span></td></tr>
+    <tr><td>Artykuł SEO #1 — publikacja na blogu</td><td>Developer / Dominik</td><td>01.08.2026</td><td><span class="verdict v-wait">ETAP 3</span></td></tr>
+    <tr><td>Restart SEARCH DE</td><td>Dominik / CMO</td><td>Sierpień 2026</td><td><span class="verdict v-wait">PO SEO FIX</span></td></tr>
+  </table>
+
+  <h2>ROI kontekst — dlaczego te kwoty są uzasadnione</h2>
+  <div class="stats">
+    <div class="stat"><div class="stat-val c-gold">8 000 PLN</div><div class="stat-label">Minimalny projekt FYNK</div><div class="stat-note">Projekt w linii</div></div>
+    <div class="stat"><div class="stat-val c-gold">25 000 PLN</div><div class="stat-label">Typowy launch nowego produktu</div><div class="stat-note">Packaging + POS</div></div>
+    <div class="stat"><div class="stat-val c-green">217%</div><div class="stat-label">ROAS Etapu 1</div><div class="stat-note">Jeśli przyniesie 1 projekt za 15k PLN</div></div>
+    <div class="stat"><div class="stat-val c-blue">572 PLN</div><div class="stat-label">Koszt jednego leadu (szac.)</div><div class="stat-note">45 755 PLN ÷ 80 leadów</div></div>
+  </div>
+
+  <div class="alert alert-green">
+    <strong>LOGIKA:</strong> Etap 1 kosztuje +2 400 PLN/mies. więcej. Jeden projekt opakowaniowy = 8 000–25 000 PLN. Wystarczy pozyskać 1 projekt na kwartał żeby budżet reklamowy był w 100% zwrócony. Przy obecnym poziomie FYNK jest ewidentnie niedoinwestowany w płatne reklamy.
+  </div>
+
+  <hr class="divider">
+  <p style="font-size:12px;color:var(--muted);text-align:center">FYNK Analiza 360° · Wygenerowano: 2026-06-02 · @CMO @SEO @CSO @COO · Dane: GA4 + Google Ads 9 mies. + SEO audit + LiveSpace CRM · Korekty właściciela uwzględnione</p>
+</div>
+
+<script>
+  const views = ['diag','cmo','seo','cso','coo'];
+
+  function go(id) {
+    views.forEach(v => {
+      const el = document.getElementById('v-' + v);
+      if (el) el.classList.remove('active');
+    });
+    const target = document.getElementById('v-' + id);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.remove('active');
+      if (['diag','cmo','seo','cso','coo'][i] === id) t.classList.add('active');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    views.forEach(v => {
+      if (!document.getElementById('v-' + v)) console.warn('Missing view: v-' + v);
+    });
+    // animate bars on view change
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        setTimeout(() => {
+          document.querySelectorAll('.bar-fill').forEach(bar => {
+            const w = bar.style.width;
+            bar.style.width = '0';
+            setTimeout(() => bar.style.width = w, 50);
+          });
+        }, 100);
+      });
+    });
+  });
+</script>
+</body>
+</html>
